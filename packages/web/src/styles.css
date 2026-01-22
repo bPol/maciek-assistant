@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+:root {
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: #111;
+  background: radial-gradient(circle at top, #f9f3e9 0%, #f5f1e8 35%, #f0efe9 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  padding: 32px 16px 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #d0c9bb;
+  border-radius: 18px;
+  padding: 20px 24px;
+  background: #fffdf7;
+  box-shadow: 0 8px 24px rgba(31, 25, 16, 0.08);
+}
+
+.header h1 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  margin: 0;
+  color: #5d5346;
+}
+
+.agent-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.agent-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #c9c0ae;
+  background: #f8f2e8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 12px;
+  border-radius: 18px;
+  border: 1px solid #d9d2c6;
+  background: #faf7f0;
+  box-shadow: inset 0 1px 0 #fffdf7;
+  overflow-y: auto;
+}
+
+.message {
+  max-width: 75%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.message p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: #1a1a1a;
+  color: #f5f1e8;
+}
+
+.message.agent {
+  align-self: flex-start;
+  background: #ffffff;
+  border: 1px solid #d9d2c6;
+}
+
+.agent-tag {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #7c6f5c;
+  margin-bottom: 6px;
+}
+
+.composer {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #d0c9bb;
+  background: #fffdf7;
+}
+
+.composer input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+  color: #1c1a16;
+}
+
+.composer button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  background: #ffb05c;
+  color: #1c1a16;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.composer button:hover {
+  background: #ff9b32;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .message {
+    max-width: 100%;
+  }
+}
