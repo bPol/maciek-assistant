@@ -98,10 +98,10 @@ const handleRoute = async (req: http.IncomingMessage, res: http.ServerResponse) 
       });
 
       const now = new Date().toISOString();
-      const messages = [
+      const messages: StoredMessage[] = [
         ...(stored.messages ?? []),
-        { role: "user", text: data.input, at: now },
-        { role: "agent", text: result.reply, agentId: agent.id, at: now }
+        { role: "user", text: data.input, at: now } as const,
+        { role: "agent", text: result.reply, agentId: agent.id, at: now } as const
       ];
 
       const { maxMessages } = firestoreConfig();
