@@ -4,6 +4,8 @@ import {
   buildAgentMemoryFromEnv,
   createDefaultAssistant
 } from "@maciek/agents";
+import { applicationDefault, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
 type RouteRequest = {
   input: string;
@@ -12,7 +14,58 @@ type RouteRequest = {
 
 const assistant = createDefaultAssistant();
 
-const memory = buildAgentMemoryFromEnv();
+type StoredMessage = {
+  role: "user" | "agent";
+  text: string;
+  agentId?: string;
+  at: string;
+};
+
+type StoredState = {
+  memory?: Record<string, unknown>;
+  messages?: StoredMessage[];
+  updatedAt?: string;
+};
+
+const firestoreConfig = () => {
+  const projectId = process.env.FIREBASE_PROJECT_ID ?? process.env.GCP_PROJECT_ID;
+  const collection = process.env.FIRESTORE_COLLECTION ?? "assistant";
+  const docId = process.env.FIRESTORE_DOC_ID ?? "global";
+  const maxMessages = Number(process.env.FIRESTORE_MAX_MESSAGES ?? 200);
+
+  return { projectId, collection, docId, maxMessages };
+};
+
+const firestore = (() => {
+  const { projectId } = firestoreConfig();
+  if (!projectId) return null;
+  const app = initializeApp({
+    credential: applicationDefault(),
+    projectId
+  });
+  return getFirestore(app);
+})();
+
+const providerMemory = buildAgentMemoryFromEnv();
+
+const readStoredState = async (): Promise<StoredState> => {
+  if (!firestore) return {};
+  const { collection, docId } = firestoreConfig();
+  const doc = await firestore.collection(collection).doc(docId).get();
+  if (!doc.exists) return {};
+  return (doc.data() as StoredState) ?? {};
+};
+
+const writeStoredState = async (state: StoredState) => {
+  if (!firestore) return;
+  const { collection, docId } = firestoreConfig();
+  await firestore.collection(collection).doc(docId).set(state, { merge: true });
+};
+
+const mergeMemory = (stored: Record<string, unknown> | undefined) => ({
+  ...(stored ?? {}),
+  ...providerMemory
+});
 
 const jsonResponse = (res: http.ServerResponse, status: number, payload: unknown) => {
   const body = JSON.stringify(payload);
@@ -35,10 +88,37 @@ const handleRoute = async (req: http.IncomingMessage, res: http.ServerResponse) 
         return;
       }
 
+      const stored = await readStoredState();
+      const memory = mergeMemory(stored.memory);
+
       const { agent, result } = await assistant.route({
         userId: data.userId ?? "web",
         input: data.input,
         memory
+      });
+
+      const now = new Date().toISOString();
+      const messages = [
+        ...(stored.messages ?? []),
+        { role: "user", text: data.input, at: now },
+        { role: "agent", text: result.reply, agentId: agent.id, at: now }
+      ];
+
+      const { maxMessages } = firestoreConfig();
+      const trimmedMessages =
+        Number.isFinite(maxMessages) && maxMessages > 0
+          ? messages.slice(-maxMessages)
+          : messages;
+
+      await writeStoredState({
+        memory: {
+          ...(stored.memory ?? {}),
+          lastAgentId: agent.id,
+          lastReply: result.reply,
+          updatedAt: now
+        },
+        messages: trimmedMessages,
+        updatedAt: now
       });
 
       jsonResponse(res, 200, {
