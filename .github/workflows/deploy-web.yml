@@ -13,8 +13,8 @@ jobs:
     environment: production
     env:
       VITE_API_URL: ${{ vars.VITE_API_URL }}
-      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
-      VITE_ALLOWED_EMAILS: ${{ secrets.VITE_ALLOWED_EMAILS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_ALLOWED_EMAILS: ${{ vars.VITE_ALLOWED_EMAILS }}
     steps:
       - uses: actions/checkout@v4
 
