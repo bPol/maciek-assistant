@@ -33,6 +33,7 @@ jobs:
           IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REPO}/maciek-api:${GITHUB_SHA}"
           echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
           gcloud builds submit \
+            --suppress-logs \
             --config packages/api/cloudbuild.yaml \
             --substitutions=_IMAGE="$IMAGE" \
             .
