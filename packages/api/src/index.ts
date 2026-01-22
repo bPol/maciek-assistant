@@ -1,9 +1,8 @@
 import http from "node:http";
 import { URL } from "node:url";
 import {
-  createClickUpRestProvider,
-  createDefaultAssistant,
-  createFlowtlyMcpProvider
+  buildAgentMemoryFromEnv,
+  createDefaultAssistant
 } from "@maciek/agents";
 
 type RouteRequest = {
@@ -13,49 +12,7 @@ type RouteRequest = {
 
 const assistant = createDefaultAssistant();
 
-const parseBoolean = (value: string | undefined): boolean | undefined => {
-  if (value === undefined) return undefined;
-  if (value.toLowerCase() === "true") return true;
-  if (value.toLowerCase() === "false") return false;
-  return undefined;
-};
-
-const buildMemory = () => {
-  const memory: Record<string, unknown> = {};
-
-  const clickupToken =
-    process.env.CLICKUP_API_TOKEN ??
-    process.env.CLICKUP_API_KEY ??
-    process.env.CLICKUP_API_CLIENT;
-
-  const clickupListIds = process.env.CLICKUP_LIST_IDS?.split(",").map((id) => id.trim());
-
-  if (clickupToken && clickupListIds && clickupListIds.length > 0) {
-    memory.clickupProvider = createClickUpRestProvider({
-      apiToken: clickupToken,
-      listIds: clickupListIds,
-      assigneeId: process.env.CLICKUP_ASSIGNEE_ID,
-      includeClosed: parseBoolean(process.env.CLICKUP_INCLUDE_CLOSED),
-      dueInDays: process.env.CLICKUP_DUE_DAYS
-        ? Number(process.env.CLICKUP_DUE_DAYS)
-        : undefined
-    });
-  }
-
-  if (process.env.FLOWTLY_MCP_URL) {
-    memory.flowtlyProvider = createFlowtlyMcpProvider({
-      baseUrl: process.env.FLOWTLY_MCP_URL,
-      apiKey: process.env.FLOWTLY_MCP_API_KEY,
-      clientId: process.env.FLOWTLY_MCP_CLIENT_ID,
-      clientSecret: process.env.FLOWTLY_MCP_CLIENT_SECRET,
-      workspaceId: process.env.FLOWTLY_WORKSPACE_ID
-    });
-  }
-
-  return memory;
-};
-
-const memory = buildMemory();
+const memory = buildAgentMemoryFromEnv();
 
 const jsonResponse = (res: http.ServerResponse, status: number, payload: unknown) => {
   const body = JSON.stringify(payload);

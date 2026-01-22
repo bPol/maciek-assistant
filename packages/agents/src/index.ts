@@ -1,5 +1,6 @@
 import { createFinanceAgent } from "./agents/finance.js";
 import { createTodoAgent } from "./agents/todo.js";
+export { buildAgentMemoryFromEnv, createClickUpProviderFromEnv, createFlowtlyProviderFromEnv } from "./env.js";
 export { createClickUpRestProvider } from "./providers/clickup.js";
 export { createFlowtlyMcpProvider } from "./providers/flowtly.js";
 export { createFinanceAgent } from "./agents/finance.js";
