@@ -146,6 +146,7 @@ const server = http.createServer((req, res) => {
 });
 
 const port = Number(process.env.PORT ?? 8080);
-server.listen(port, () => {
-  console.log(`API listening on ${port}`);
+const host = process.env.HOST ?? undefined;
+server.listen(port, host, () => {
+  console.log(`API listening on ${host ?? "0.0.0.0"}:${port}`);
 });

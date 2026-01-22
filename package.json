@@ -9,6 +9,7 @@
     "build": "npm run -ws build",
     "dev": "npm run -w @maciek/web dev",
     "dev:all": "concurrently -n api,web \"npm -w @maciek/api run dev\" \"npm -w @maciek/web run dev\"",
+    "e2e:local": "node scripts/e2e.mjs",
     "lint": "npm run -ws lint",
     "typecheck": "npm run -ws typecheck"
   },
