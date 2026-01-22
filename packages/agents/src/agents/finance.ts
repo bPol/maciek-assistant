@@ -1,5 +1,5 @@
-import type { Agent, AgentContext } from "./index.js";
-import type { FlowtlyProvider } from "./flowtly.js";
+import type { Agent, AgentContext } from "../index.js";
+import type { FlowtlyProvider } from "../providers/flowtly.js";
 
 type FinanceSummary = {
   headline: string;

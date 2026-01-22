@@ -1,4 +1,4 @@
-import type { AgentContext } from "./index.js";
+import type { AgentContext } from "../index.js";
 
 type FlowtlyMetric = {
   label: string;

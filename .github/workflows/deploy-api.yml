@@ -1,0 +1,46 @@
+name: Deploy API (Cloud Run)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      GCP_PROJECT_ID: maciek-assistant
+      GCP_REGION: europe-west1
+      ARTIFACT_REPO: maciek-assistant
+      SERVICE_NAME: maciek-assistant-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build image
+        run: |
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REPO}/maciek-api:${GITHUB_SHA}"
+          echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+          gcloud builds submit --tag "$IMAGE" -f packages/api/Dockerfile .
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image "$IMAGE" \
+            --region "$GCP_REGION" \
+            --project "$GCP_PROJECT_ID" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "FLOWTLY_MCP_URL=${{ vars.FLOWTLY_MCP_URL }},FLOWTLY_WORKSPACE_ID=${{ vars.FLOWTLY_WORKSPACE_ID }},CLICKUP_LIST_IDS=${{ vars.CLICKUP_LIST_IDS }},CLICKUP_ASSIGNEE_ID=${{ vars.CLICKUP_ASSIGNEE_ID }},CLICKUP_INCLUDE_CLOSED=${{ vars.CLICKUP_INCLUDE_CLOSED }},CLICKUP_DUE_DAYS=${{ vars.CLICKUP_DUE_DAYS }},CORS_ORIGIN=${{ vars.CORS_ORIGIN }}" \
+            --set-env-vars "FLOWTLY_MCP_API_KEY=${{ secrets.FLOWTLY_MCP_API_KEY }},FLOWTLY_MCP_CLIENT_ID=${{ secrets.FLOWTLY_MCP_CLIENT_ID }},FLOWTLY_MCP_CLIENT_SECRET=${{ secrets.FLOWTLY_MCP_CLIENT_SECRET }},CLICKUP_API_TOKEN=${{ secrets.CLICKUP_API_TOKEN }},CLICKUP_API_CLIENT=${{ secrets.CLICKUP_API_CLIENT }},CLICKUP_API_CLIENT_SECRET=${{ secrets.CLICKUP_API_CLIENT_SECRET }},GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}"

@@ -1,4 +1,4 @@
-import type { Agent, AgentContext } from "./index.js";
+import type { Agent, AgentContext } from "../index.js";
 
 type TodoTask = {
   id: string;

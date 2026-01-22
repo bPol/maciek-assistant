@@ -8,6 +8,7 @@
   "scripts": {
     "build": "npm run -ws build",
     "dev": "npm run -ws dev",
+    "dev:all": "npm run -ws dev",
     "lint": "npm run -ws lint",
     "typecheck": "npm run -ws typecheck"
   },

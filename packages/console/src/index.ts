@@ -20,7 +20,7 @@ const buildMemory = () => {
   }
 
   return {
-    todoProvider: createClickUpRestProvider({
+    clickupProvider: createClickUpRestProvider({
       apiToken,
       listIds,
       assigneeId: process.env.CLICKUP_ASSIGNEE_ID,

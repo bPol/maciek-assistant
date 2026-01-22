@@ -141,6 +141,67 @@ body {
   background: #ff9b32;
 }
 
+.auth-shell {
+  display: grid;
+  place-items: center;
+  min-height: 50vh;
+  padding: 24px 16px;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: #fffdf7;
+  border: 1px solid #d0c9bb;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 12px 30px rgba(31, 25, 16, 0.12);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.auth-card p {
+  margin: 0 0 16px 0;
+  color: #5d5346;
+}
+
+.google-button {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-error {
+  color: #b2381e;
+  margin: 8px 0 0 0;
+}
+
+.auth-meta {
+  font-size: 12px;
+  color: #7c6f5c;
+  margin-top: 16px;
+}
+
+.auth-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6b5f52;
+  padding: 8px 16px 0;
+}
+
+.auth-footer button {
+  border: none;
+  background: none;
+  color: #1c1a16;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
