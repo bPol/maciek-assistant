@@ -32,7 +32,10 @@ jobs:
         run: |
           IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REPO}/maciek-api:${GITHUB_SHA}"
           echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
-          gcloud builds submit --tag "$IMAGE" -f packages/api/Dockerfile .
+          gcloud builds submit \
+            --config packages/api/cloudbuild.yaml \
+            --substitutions=_IMAGE="$IMAGE" \
+            .
 
       - name: Deploy to Cloud Run
         run: |
