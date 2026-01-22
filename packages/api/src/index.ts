@@ -6,8 +6,6 @@ import {
   createFlowtlyMcpProvider
 } from "@maciek/agents";
 
-type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
-
 type RouteRequest = {
   input: string;
   userId?: string;
@@ -59,7 +57,7 @@ const buildMemory = () => {
 
 const memory = buildMemory();
 
-const jsonResponse = (res: http.ServerResponse, status: number, payload: JsonValue) => {
+const jsonResponse = (res: http.ServerResponse, status: number, payload: unknown) => {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     "Content-Type": "application/json",
