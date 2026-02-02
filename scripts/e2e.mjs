@@ -69,6 +69,10 @@ const testRouteFinance = async () => {
   assert.equal(response.status, 200);
   assert.equal(json.agentId, "finance");
   assert.ok(typeof json.reply === "string");
+  assert.ok(json.metadata && typeof json.metadata.connected === "boolean");
+  if (json.metadata.connected) {
+    assert.ok(["llm", "rules"].includes(json.metadata.summaryMode));
+  }
 };
 
 const run = async () => {

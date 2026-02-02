@@ -7,6 +7,14 @@ type FinanceSummary = {
   notes: string[];
 };
 
+type GeminiGenerateResponse = {
+  candidates?: {
+    content?: {
+      parts?: { text?: string }[];
+    };
+  }[];
+};
+
 const isFlowtlyProvider = (value: unknown): value is FlowtlyProvider => {
   if (!value || typeof value !== "object") {
     return false;
@@ -20,6 +28,31 @@ const resolveProvider = (ctx: AgentContext): FlowtlyProvider | null => {
     return memory.flowtlyProvider;
   }
   return null;
+};
+
+const readProcessEnv = () => {
+  if (typeof process === "undefined" || !process.env) {
+    return undefined;
+  }
+  return process.env;
+};
+
+const readViteEnv = () => {
+  try {
+    return (import.meta as { env?: Record<string, string> }).env;
+  } catch {
+    return undefined;
+  }
+};
+
+const getGeminiApiKey = () => {
+  const viteEnv = readViteEnv();
+  const processEnv = readProcessEnv();
+  return (
+    viteEnv?.VITE_GEMINI_API_KEY ??
+    processEnv?.GEMINI_API_KEY ??
+    processEnv?.VITE_GEMINI_API_KEY
+  );
 };
 
 const summarizeSnapshot = (snapshot: {
@@ -41,6 +74,58 @@ const summarizeSnapshot = (snapshot: {
   };
 };
 
+const summarizeWithGemini = async (
+  snapshot: {
+    asOf?: string;
+    metrics?: { label: string; value: string | number; delta?: string }[];
+    notes?: string[];
+  },
+  request: string
+) => {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    return null;
+  }
+
+  const prompt = [
+    "You are a finance assistant.",
+    "Use only the data provided in the JSON to answer the user's request.",
+    "Output plain text with 3-6 lines, no markdown, no bullet symbols.",
+    "Line 1 must be 'Finance snapshot as of <asOf>.' or 'Finance snapshot.'",
+    "Include each metric as 'Label: value' and include '(delta)' if present.",
+    "If no metrics are provided, include the line 'No metrics returned yet.'",
+    "If notes exist, add them as full sentences on the last lines.",
+    "",
+    `User request: ${request}`,
+    `Snapshot JSON: ${JSON.stringify(snapshot)}`
+  ].join("\n");
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0 }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as GeminiGenerateResponse;
+  const text =
+    data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ??
+    "";
+  const trimmed = text.trim();
+  return trimmed ? trimmed : null;
+};
+
 const setupReply = () =>
   [
     "I can connect to Flowtly once a provider is wired in.",
@@ -60,10 +145,16 @@ export const createFinanceAgent = (): Agent => ({
 
     try {
       const snapshot = await provider.getSnapshot(ctx);
-      const summary = summarizeSnapshot(snapshot);
+      let reply = await summarizeWithGemini(snapshot, ctx.input);
+      let summaryMode = "llm";
+      if (!reply) {
+        const summary = summarizeSnapshot(snapshot);
+        reply = [summary.headline, ...summary.metrics, ...summary.notes].join("\n");
+        summaryMode = "rules";
+      }
       return {
-        reply: [summary.headline, ...summary.metrics, ...summary.notes].join("\n"),
-        metadata: { connected: true }
+        reply,
+        metadata: { connected: true, summaryMode }
       };
     } catch (error) {
       return {

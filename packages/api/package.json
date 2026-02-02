@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@maciek/agents": "*",
+    "dotenv": "^16.4.5",
     "firebase-admin": "^12.7.0"
   }
 }

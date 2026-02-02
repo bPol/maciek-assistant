@@ -1,11 +1,16 @@
+import dotenv from "dotenv";
 import http from "node:http";
-import { URL } from "node:url";
+import { dirname, resolve } from "node:path";
+import { URL, fileURLToPath } from "node:url";
 import {
   buildAgentMemoryFromEnv,
   createDefaultAssistant
 } from "@maciek/agents";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+dotenv.config({ path: resolve(rootDir, ".env") });
 
 type RouteRequest = {
   input: string;
